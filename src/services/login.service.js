@@ -8,7 +8,6 @@ const generateToken = (payload) => {
 };
 
 const login = async ({ email, password }) => {
-  console.log(email, password, 'email, password');
   if (!email || !password) { 
     return { status: 400, data: { message: 'Some required fields are missing' } }; 
   }
