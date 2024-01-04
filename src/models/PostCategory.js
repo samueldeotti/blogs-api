@@ -9,7 +9,7 @@ const PostModel = (sequelize, DataTypes) => {
       primaryKey: true,
     },
   }, {
-    tableName: 'blog_posts',
+    tableName: 'posts_categories',
     timestamps: false,
     underscored: true,
   });

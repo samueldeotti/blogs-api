@@ -1,5 +1,9 @@
 const Sequelize = require('sequelize');
+const config = require('../config/config');
 const { BlogPost, PostCategory, Category } = require('../models');
+
+const env = process.env.NODE_ENV || 'development';
+const sequelize = new Sequelize(config[env]);
 
 const verifyCategory = async (categoryIds) => {
   const categories = await Promise.all(categoryIds
@@ -8,23 +12,26 @@ const verifyCategory = async (categoryIds) => {
 };
 
 const newPost = async ({ title, content, categoryIds, userId }) => {
-  if (verifyCategory(categoryIds)) {
+  if (await verifyCategory(categoryIds)) {
     return { status: 400, data: { message: 'one or more "categoryIds" not found' } };
   }
   
-  const t = await Sequelize.transaction();
+  const result = await sequelize.transaction(async (t) => {
+    const createdPost = await BlogPost.create({
+      title,
+      content,
+      userId,
+    }, { transaction: t });
 
-  const createdPost = await BlogPost.create({
-    title,
-    content,
-    userId,
-  }, { transaction: t });
-
-  await Promise.all(categoryIds.map((categoryId) => PostCategory.create({
-    categoryId,
-    postId: createdPost.id,
-  }, { transaction: t })));
-  return { status: 201, data: createdPost };
+    await Promise.all(categoryIds.map((categoryId) => PostCategory.create({
+      categoryId,
+      postId: createdPost.id,
+    }, { transaction: t })));
+    
+    return createdPost;
+  });
+  
+  return { status: 201, data: result };
 };
 
 module.exports = {
