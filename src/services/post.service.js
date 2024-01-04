@@ -27,9 +27,11 @@ const newPost = async ({ title, content, categoryIds, userId }) => {
       categoryId,
       postId: createdPost.id,
     }, { transaction: t })));
-    
+
     return createdPost;
   });
+
+  console.log(result);
   
   return { status: 201, data: result };
 };
